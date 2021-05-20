@@ -1,14 +1,14 @@
 $resourceGroup = ""
-$relativeDnsName = ""
+$relativeDnsName = "sub.domain.tld"
 $monitorPath = "/"
 $monitorProtocol = "HTTPS" # HTTP, HTTPS, TCP
 $monitorPort = 443
 $profileName = $relativeDnsName.Replace(".","-").ToLower()
 
-$endpointName_1 = ""
-$endpointTarget_1 = ""
-$endpointName_2 = ""
-$endpointTarget_2 = ""
+$endpointName_1 = "Location 1"
+$endpointTarget_1 = "0.0.0.0"
+$endpointName_2 = "Location 2"
+$endpointTarget_2 = "0.0.0.0"
 
 Write-Host "Create Azure Traffic Manager Profile $($profileName): " -NoNewline
 New-AzTrafficManagerProfile -Name $profileName -ResourceGroupName $resourceGroup -ProfileStatus Enabled -TrafficRoutingMethod Priority -RelativeDnsName $relativeDnsName -TTL 60 -MonitorProtocol $monitorProtocol -MonitorPort $monitorPort -MonitorPath $monitorPath | Out-Null
