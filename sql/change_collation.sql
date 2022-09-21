@@ -29,6 +29,10 @@
 * Added fix from Erland for doubling length of nchar columns
 * Added quoting of column names in create index statements (for reserved words)
 *
+* Modified 2022-09-21 by Matthew Rees
+*
+* Fix bug when user defined types exist by adding additional join clause on sys.types for user_type_id
+*
 *********************************************************************************/
  
 SET NOCOUNT ON;
@@ -100,6 +104,7 @@ INNER JOIN  sys.columns             AS c
    AND      c.collation_name    <> @DatabaseCollation -- Table needs to have columns with "wrong" collation
 INNER JOIN  sys.types               AS ty
    ON       ty.system_type_id   = c.system_type_id
+   AND      ty.user_type_id     = c.user_type_id
    AND      ty.name             <> N'sysname' -- Exclusion retained from Philip C's original script
 LEFT JOIN   sys.index_columns       AS ic -- Find indexes on any of the affected columns
   ON        ic.object_id        = c.object_id
@@ -161,6 +166,7 @@ BEGIN;
     FROM        sys.columns AS c
     INNER JOIN  sys.types   AS ty
        ON       ty.system_type_id = c.system_type_id
+       AND      ty.user_type_id   = c.user_type_id
        AND      ty.name           <> N'sysname'
     WHERE       c.object_id = @object_id
     AND         c.collation_name    <> @DatabaseCollation;
@@ -212,6 +218,7 @@ BEGIN;
                            AND      c.collation_name  <> @DatabaseCollation
                         INNER JOIN  sys.types         AS ty
                            ON       ty.system_type_id = c.system_type_id
+                           AND      ty.user_type_id   = c.user_type_id
                            AND      ty.name           <> N'sysname'
                         WHERE       ic.index_id = ix.index_id
                         AND         ic.object_id        = ix.object_id);
@@ -399,6 +406,7 @@ BEGIN;
                            AND      c.collation_name  <> @DatabaseCollation
                         INNER JOIN  sys.types               AS ty
                            ON       ty.system_type_id = c.system_type_id
+                           AND      ty.user_type_id   = c.user_type_id
                            AND      ty.name           <> N'sysname'
                         WHERE       fkc.parent_object_id = fk.parent_object_id
                         AND         fkc.constraint_object_id     = fk.object_id);
@@ -604,6 +612,7 @@ BEGIN;
                            AND      c.collation_name  <> @DatabaseCollation
                         INNER JOIN  sys.types         AS ty
                            ON       ty.system_type_id = c.system_type_id
+                           AND      ty.user_type_id   = c.user_type_id
                            AND      ty.name           <> N'sysname'
                         WHERE       ic.object_id = kc.parent_object_id
                         AND         ic.index_id          = kc.unique_index_id);
@@ -691,6 +700,7 @@ BEGIN;
            AND      dc.parent_column_id = c.column_id 
         INNER JOIN  sys.types   AS ty
            ON       ty.system_type_id = c.system_type_id
+           AND      ty.user_type_id   = c.user_type_id
            AND      ty.name           <> N'sysname'
         WHERE       c.object_id = @object_id
         AND         c.collation_name    <> @DatabaseCollation;
@@ -705,6 +715,7 @@ BEGIN;
         INNER JOIN  sys.default_constraints dc on dc.object_id = c.default_object_id 
         INNER JOIN  sys.types   AS ty
            ON       ty.system_type_id = c.system_type_id
+           AND      ty.user_type_id   = c.user_type_id
            AND      ty.name           <> N'sysname'
         WHERE       c.object_id = @object_id
         AND         c.collation_name    <> @DatabaseCollation;
