@@ -33,6 +33,10 @@
 *
 * Fix bug when user defined types exist by adding additional join clause on sys.types for user_type_id
 *
+* Modified 2023-05-31 by Roelof de Villiers
+*
+* Include original constraint name when putting back DEFAULT constraints.
+*
 *********************************************************************************/
  
 SET NOCOUNT ON;
@@ -693,7 +697,7 @@ BEGIN;
                                       script)
         SELECT      'DropDefault',
                     N'ALTER TABLE ' + QUOTENAME(@SchemaName) + N'.' + QUOTENAME(@TableName) + N' DROP CONSTRAINT '
-                    + QUOTENAME(dc.name) + ' '
+                    + QUOTENAME(dc.name)
         FROM        sys.columns AS c 
         INNER JOIN  sys.default_constraints dc 
            ON       dc.object_id = c.default_object_id 
@@ -709,7 +713,8 @@ BEGIN;
         INSERT INTO #tempscriptstore (ScriptType,
                                       script)
         SELECT      'CreateDefault',
-                    N'ALTER TABLE ' + QUOTENAME(@SchemaName) + N'.' + QUOTENAME(@TableName) + N' ADD DEFAULT '
+                    N'ALTER TABLE ' + QUOTENAME(@SchemaName) + N'.' + QUOTENAME(@TableName) + N' ADD CONSTRAINT '
+                    + QUOTENAME(dc.name) + ' DEFAULT '
                     + dc.definition + ' FOR ' + QUOTENAME(c.name) 
         FROM        sys.columns AS c 
         INNER JOIN  sys.default_constraints dc on dc.object_id = c.default_object_id 
